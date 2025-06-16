@@ -40,7 +40,7 @@ local entity = spawner.Create({
     },
     Movement = {
         Speed = 150,
-        Delay = 0,
+        Delay = 5,
         Reversed = false
     },
     Rebounding = {
@@ -58,11 +58,12 @@ local entity = spawner.Create({
         Break = true
     },
     Death = {
-        Type = "Guiding",
+        Type = "Curious",
         Hints = {
             "You die to dizturbance?",
             "When it appears the room turns pink",
-            "Hide now because it's coming very soon!",
+            "Hide now!",
+            "Because it's coming very soon!",
             "Good luck"
         },
         Cause = "dizturbance"
