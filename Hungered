@@ -1,0 +1,85 @@
+-- Chuyển sang Entity Spawner V2 với Guiding Light chuẩn
+
+local entityModel = true local room = game.ReplicatedStorage.GameData.LatestRoom.Value local currentRoom = workspace.CurrentRooms[room]
+
+-- Kiểm tra điều kiện để KHÔNG spawn entity local isSeekActive = game.Workspace:FindFirstChild("SeekMovingNewClone") ~= nil local isShopRoom = currentRoom and currentRoom:FindFirstChild("Assets") and currentRoom.Assets:FindFirstChild("ShopProps") ~= nil local isSpecialRoom = room == 50 or room == 51 or room == 52 local isNearEnd = room >= 90
+
+if isSeekActive or isSpecialRoom or isShopRoom or isNearEnd then entityModel = false end
+
+if entityModel then -- Âm thanh xuất hiện local cue = Instance.new("Sound") cue.Parent = game.Workspace cue.Name = "Spawn" cue.SoundId = "rbxassetid://9125713308" cue.Volume = 9999 cue.PlaybackSpeed = 1 cue:Play() wait(1)
+
+local cue2 = Instance.new("Sound")
+cue2.Parent = game.Workspace
+cue2.Name = "Spawn"
+cue2.SoundId = "rbxassetid://9125712561"
+cue2.Volume = 9999
+cue2.PlaybackSpeed = 1
+cue2:Play()
+
+-- Dùng Entity Spawner V2
+local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
+local achievementGiver = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Custom%20Achievements/Source.lua"))()
+
+local entity = spawner.Create({
+    Entity = {
+        Name = "Hunger/Hungered",
+        Asset = "96360347693213",
+        HeightOffset = 0
+    },
+    Lights = {
+        Flicker = {
+            Enabled = true,
+            Duration = 5
+        },
+        Shatter = true,
+        Repair = false
+    },
+    Movement = {
+        Speed = 300,
+        Delay = 2,
+        Reversed = false
+    },
+    Rebounding = {
+        Enabled = true,
+        Type = "Ambush",
+        Min = 4,
+        Max = 6,
+        Delay = 0.5
+    },
+    Damage = {
+        Enabled = true,
+        Range = 40,
+        Amount = 100
+    },
+    Crucifixion = {
+        Enabled = true,
+        Range = 60,
+        Resist = false,
+        Break = true
+    },
+    Death = {
+        Type = "Curious",
+        Cause = "Hunger/Hungered",
+        Hints = {
+            "You died to Hunger or who call Hungered",
+            "It appears without red room now, but still dangerous.",
+            "He can come back a few times, so hide until it's safe."
+        }
+    }
+})
+
+entity:SetCallback("OnDespawned", function()
+    achievementGiver({
+        Title = "Too smart",
+        Desc = "ULTRA pro gamer",
+        Reason = "Encounter Hunger/Hungered",
+        Image = "rbxassetid://17787953833"
+    })
+end)
+
+task.delay(13.856, function()
+    entity:Run()
+    require(game.ReplicatedStorage.ClientModules.Module_Events).tryp(workspace.CurrentRooms, 100)
+end)
+
+end
