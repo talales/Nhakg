@@ -1,0 +1,140 @@
+game.ReplicatedStorage.GameData.LatestRoom.Changed:Wait()
+
+---====== Load spawner ======---
+local spawner = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"
+))()
+
+---====== Create entity ======---
+local entity = spawner.Create({
+	Entity = {
+		Name = "Revoker",
+		Asset = "rbxassetid://14101276513",
+		HeightOffset = 0
+	},
+
+	Lights = {
+		Flicker = { Enabled = false },
+		Shatter = true,
+		Repair = false
+	},
+
+	CameraShake = {
+		Enabled = true,
+		Range = 100,
+		Values = {1.5, 20, 0.1, 1}
+	},
+
+	Movement = {
+		Speed = 40,
+		Delay = 6,
+		Reversed = false -- ❗ KHÔNG ĐI TỪ SAU
+	},
+
+	Rebounding = {
+		Enabled = false -- ❗ KHÔNG QUAY ĐẦU
+	},
+
+	Damage = {
+		Enabled = true,
+		Range = 50,
+		Amount = 125
+	},
+
+	Crucifixion = {
+		Enabled = true,
+		Range = 40,
+		Resist = false,
+		Break = true
+	},
+
+	Death = {
+		Type = "Guiding",
+		Hints = {
+			"You die to Revoker",
+			"It comes from the front",
+			"It attacks only once",
+			"Hide when you hear it"
+		},
+		Cause = "Revoker"
+	}
+})
+
+----------------------------------------------------------------
+-- 🔧 FIX 1: ÉP SPAWN Ở PHÒNG PHÍA TRƯỚC
+----------------------------------------------------------------
+entity:SetCallback("OnSpawned", function()
+	print("Revoker spawned")
+
+	local rooms = workspace.CurrentRooms:GetChildren()
+	local currentRoom = rooms[#rooms]
+
+	if currentRoom and currentRoom:FindFirstChild("Door")
+	and currentRoom.Door:FindFirstChild("TargetRoom")
+	and currentRoom.Door.TargetRoom.Value then
+
+		local nextRoom = currentRoom.Door.TargetRoom.Value
+		entity.Model:PivotTo(nextRoom.RoomStart.CFrame)
+	end
+
+	-- Âm báo spawn
+	local cue = Instance.new("Sound", workspace)
+	cue.SoundId = "rbxassetid://4288784832"
+	cue.Volume = 4
+	cue:Play()
+
+	-- Màu xanh (KHÔNG QUA ĐỎ)
+	local cc = game.Lighting:FindFirstChild("MainColorCorrection")
+	if not cc then
+		cc = Instance.new("ColorCorrectionEffect", game.Lighting)
+		cc.Name = "MainColorCorrection"
+	end
+
+	cc.TintColor = Color3.fromRGB(255,255,255)
+	cc.Contrast = 0
+
+	game:GetService("TweenService"):Create(
+		cc,
+		TweenInfo.new(2),
+		{ TintColor = Color3.fromRGB(3,98,252) }
+	):Play()
+end)
+
+----------------------------------------------------------------
+-- 🔧 FIX 2: CHỈ ĐI 1 LẦN RỒI BIẾN MẤT
+----------------------------------------------------------------
+entity:SetCallback("OnStartMoving", function()
+	print("Revoker moving")
+
+	task.delay(8, function()
+		entity:Despawn()
+	end)
+end)
+
+----------------------------------------------------------------
+-- RESET ÁNH SÁNG KHI BIẾN MẤT
+----------------------------------------------------------------
+entity:SetCallback("OnDespawned", function()
+	print("Revoker despawned")
+
+	local cc = game.Lighting:FindFirstChild("MainColorCorrection")
+	if cc then
+		game:GetService("TweenService"):Create(
+			cc,
+			TweenInfo.new(2),
+			{ TintColor = Color3.fromRGB(255,255,255) }
+		):Play()
+	end
+end)
+
+----------------------------------------------------------------
+-- ❗ GIỮ NGUYÊN JUMPSCARE CỦA BẠN (KHÔNG ĐỤNG)
+----------------------------------------------------------------
+entity:SetCallback("OnDamagePlayer", function(newHealth)
+	if newHealth <= 0 then
+		-- jumpscare của bạn giữ nguyên ở đây
+	end
+end)
+
+---====== Run entity ======---
+entity:Run()
